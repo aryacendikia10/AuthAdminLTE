@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use PDF;
+use App\Exports\BooksExport;
+use App\Imports\BooksImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BookController extends Controller
 {
@@ -164,5 +167,20 @@ class BookController extends Controller
         $books = Book::all();
         $pdf = PDF::loadview('print_books', ['books' => $books]);
         return $pdf->download('data_buku.pdf');
+    }
+    public function export()
+    {
+        return Excel::download(new BooksExport, 'Books.xlsx');
+    }
+    public function import(Request $request)
+    {
+        Excel::import(new BooksImport, $request->file('file'));
+
+        $notification = array(
+            'message' => 'import data berhasil',
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('admin.books')->with($notification);
     }
 }
